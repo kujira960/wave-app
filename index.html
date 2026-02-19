@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wave & Flower</title>
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --card:#121623;
+      --card2:#0f1320;
+      --text:#e9eefc;
+      --muted:#a9b2cc;
+      --line:rgba(255,255,255,.10);
+      --soft:rgba(255,255,255,.06);
+      --accent:#8fb3ff;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(143,179,255,.16), transparent 60%),
+                  radial-gradient(900px 700px at 90% 30%, rgba(255,185,120,.10), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1080px;margin:0 auto;padding:22px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);
+      background:rgba(18,22,35,.65);backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+    header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:.02em}
+    header .small{font-size:12px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns: 380px 1fr; gap:16px; margin-top:16px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(18,22,35,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .card .hd h2{margin:0;font-size:14px;font-weight:650}
+    .card .bd{padding:14px 16px}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input[type="date"], textarea{
+      width:100%;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      outline:none;
+    }
+    textarea{min-height:110px;resize:vertical}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:650;
+      letter-spacing:.02em;
+      transition:.15s transform, .15s background, .15s border;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background:rgba(255,255,255,.06)}
+    .btn.primary{background:rgba(143,179,255,.16); border-color:rgba(143,179,255,.40)}
+    .btn.primary:hover{background:rgba(143,179,255,.22)}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:rgba(255,90,90,.12); border-color:rgba(255,90,90,.35)}
+    .btn.small{padding:8px 10px;font-size:12px;border-radius:12px}
+    .seg{display:flex;gap:10px;flex-wrap:wrap}
+    .chip{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      cursor:pointer;
+      transition:.15s transform, .15s background, .15s border;
+    }
+    .chip:hover{transform: translateY(-1px); background:rgba(255,255,255,.05)}
+    .chip[aria-pressed="true"]{
+      border-color: rgba(143,179,255,.55);
+      background: rgba(143,179,255,.14);
+    }
+    .chip .t{font-weight:700;font-size:12px;color:var(--text)}
+    .chip .s{font-size:12px;color:var(--muted)}
+    .preview{
+      padding:14px 16px;border-top:1px solid var(--line);
+      background:rgba(15,19,32,.55);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .preview .box{
+      display:flex;align-items:center;gap:12px;
+    }
+    .preview .cap{font-size:12px;color:var(--muted);line-height:1.3}
+    .swatches{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .sw{
+      width:26px;height:26px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:#999;cursor:pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
+      position:relative;
+    }
+    .sw[aria-pressed="true"]::after{
+      content:"";position:absolute;inset:5px;border-radius:999px;
+      border:2px solid rgba(255,255,255,.75);
+    }
+    .colorpick{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+      padding:10px 12px;border-radius:16px;border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    input[type="color"]{
+      width:42px;height:34px;border:none;background:transparent;cursor:pointer;padding:0
+    }
+
+    /* Calendar */
+    .cal-top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:14px 16px;border-bottom:1px solid var(--line);
+    }
+    .cal-top .month{font-weight:800}
+    .cal{
+      padding:14px 16px;
+    }
+    .dow{
+      display:grid;grid-template-columns:repeat(7,1fr);gap:10px;
+      margin-bottom:8px;
+      color:var(--muted);font-size:12px;
+    }
+    .grid7{
+      display:grid;grid-template-columns:repeat(7,1fr);gap:10px;
+    }
+    .day{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      border-radius:16px;
+      min-height:86px;
+      padding:8px;
+      cursor:pointer;
+      transition:.12s transform, .12s background, .12s border;
+      position:relative;
+      overflow:hidden;
+    }
+    .day:hover{transform:translateY(-1px);background:rgba(255,255,255,.05)}
+    .day.out{opacity:.45}
+    .day .num{font-size:12px;color:var(--muted);font-weight:700}
+    .icon{
+      position:absolute;left:8px;right:8px;bottom:8px;
+      display:flex;align-items:flex-end;justify-content:center;
+      pointer-events:none;
+    }
+    .badge{
+      position:absolute;top:8px;right:8px;
+      font-size:11px;color:rgba(255,255,255,.85);
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.12);
+      padding:4px 8px;border-radius:999px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Modal */
+    .modal-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;padding:18px;
+    }
+    .modal{
+      width:min(520px, 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(18,22,35,.92);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .modal .hd .ttl{font-weight:800}
+    .modal .bd{padding:14px 16px}
+    .modal .ft{display:flex;gap:10px;justify-content:flex-end;padding:14px 16px;border-top:1px solid var(--line);background:rgba(15,19,32,.55)}
+    .muted{color:var(--muted);font-size:12px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Wave & Flower</h1>
+        <div class="small">ログインなし / このPCの中に保存されます</div>
+      </div>
+      <button class="btn ghost small" id="exportBtn" title="バックアップ用（テキスト）">バックアップ</button>
+    </header>
+
+    <div class="grid">
+      <!-- Left: Create / Edit -->
+      <section class="card" aria-label="今日の波を作る">
+        <div class="hd">
+          <h2>今日の波</h2>
+          <button class="btn small danger" id="clearTodayBtn" title="今日の記録だけ消す">今日を消す</button>
+        </div>
+
+        <div class="bd">
+          <label>日付</label>
+          <input type="date" id="dateInput" />
+
+          <label>波の形</label>
+          <div class="seg" id="waveSeg">
+<div class="chip" data-wave="F" role="button" tabindex="0" aria-pressed="false">
+  <div>
+    <div class="t">無</div>
+    <div class="s">フラット</div>
+  </div>
+  <div class="mini" id="miniF"></div>
+</div>
+
+            <div class="chip" data-wave="S" role="button" tabindex="0" aria-pressed="true">
+              <div>
+                <div class="t">小</div>
+                <div class="s">静か</div>
+              </div>
+              <div class="mini" id="miniS"></div>
+            </div>
+            <div class="chip" data-wave="M" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">中</div>
+                <div class="s">揺れ</div>
+              </div>
+              <div class="mini" id="miniM"></div>
+            </div>
+            <div class="chip" data-wave="L" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">大</div>
+                <div class="s">強い揺れ</div>
+              </div>
+              <div class="mini" id="miniL"></div>
+            </div>
+          </div>
+
+          <label>色</label>
+          <div class="swatches" id="swatches"></div>
+
+          <div style="height:10px"></div>
+          <div class="colorpick">
+            <div class="muted">自由色</div>
+            <input type="color" id="colorPicker" value="#8fb3ff" />
+            <div class="muted mono" id="colorCode">#8fb3ff</div>
+          </div>
+
+          <label>メモ（任意）</label>
+          <textarea id="memoInput" placeholder="何も書かなくてもOK"></textarea>
+
+          <div style="height:12px"></div>
+          <div class="row">
+            <button class="btn primary" id="saveBtn">保存</button>
+            <button class="btn" id="loadBtn">読み込み</button>
+          </div>
+        </div>
+
+     
+
+        <div class="cal">  
+ 
+      </section>
+
+      <!-- Right: Calendar -->
+      <section class="card" aria-label="カレンダー">
+        <div class="cal-top">
+          <div class="row" style="gap:8px">
+            <button class="btn small" id="prevBtn">←</button>
+            <button class="btn small" id="nextBtn">→</button>
+          </div>
+          <div class="month" id="monthLabel">----</div>
+          <button class="btn small" id="jumpTodayBtn">今月へ</button>
+        </div>
+<div class="preview">
+          <div class="box">
+            <div id="bigPreview"></div>
+            <div class="cap">
+              波の日：<span class="mono">波 + 小さな花</span><br/>
+              記録なし：<span class="mono">花</span>
+            </div>
+          </div>
+          <button class="btn small" id="todayBtn">今日</button>
+        </div>
+          <div class="dow">
+            <div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div>
+          </div>
+          <div class="grid7" id="calGrid"></div>
+          <div class="muted" style="margin-top:12px">
+            ※データはこのPCのブラウザ内に保存されます（他の端末には自動で移りません）
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-bg" id="modalBg" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="詳細">
+      <div class="hd">
+        <div class="ttl" id="modalTitle">----</div>
+        <button class="btn small" id="closeModalBtn">閉じる</button>
+      </div>
+      <div class="bd">
+        <div id="modalIcon" style="margin-bottom:10px"></div>
+        <div class="muted">メモ</div>
+        <div id="modalMemo" style="white-space:pre-wrap;margin-top:6px"></div>
+<div class="muted" style="margin-top:12px">履歴</div>
+<div id="modalHistory" style="margin-top:6px"></div>
+      </div>
+      <div class="ft">
+        <button class="btn danger" id="deleteEntryBtn">この日の記録を消す</button>
+        <button class="btn primary" id="editEntryBtn">この日に編集する</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ===== Helpers (date) =====
+  const pad2 = n => String(n).padStart(2, '0');
+  const toKey = (d) => {
+    const y = d.getFullYear();
+    const m = pad2(d.getMonth()+1);
+    const day = pad2(d.getDate());
+    return `${y}-${m}-${day}`;
+  };
+  const fromKey = (key) => {
+    const [y,m,d] = key.split('-').map(Number);
+    return new Date(y, m-1, d);
+  };
+  const ymKey = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+
+  // ===== Storage =====
+  const STORAGE_KEY = 'waveflower_entries_v1';
+  function readAll() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch {
+      return {};
+    }
+  }
+  function writeAll(obj) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  }
+  function upsertEntry(dateKey, entry) {
+    const all = readAll();
+    all[dateKey] = entry;
+    writeAll(all);
+  }
+  function deleteEntry(dateKey) {
+    const all = readAll();
+    delete all[dateKey];
+    writeAll(all);
+  }
+  function getEntry(dateKey) {
+    const all = readAll();
+    return all[dateKey] || null;
+  }
+function getDayHistory(dateKey) {
+  const all = readAll();
+  const v = all[dateKey];
+  if (!v) return [];
+
+  // 以前の形式（1日1つのオブジェクト）にも対応（自動変換）
+  if (Array.isArray(v)) return v;
+
+  if (typeof v === 'object') {
+    return [{
+      ts: null,
+      wave: v.wave || "S",
+      color: v.color || "#8fb3ff",
+      memo: v.memo || ""
+    }];
+  }
+  return [];
+}
+
+function upsertDayHistory(dateKey, historyArray) {
+  const all = readAll();
+  all[dateKey] = historyArray;
+  writeAll(all);
+}
+
+  // ===== SVG templates =====
+  // Wave paths: fixed templates (S/M/L). Color will be applied.
+const WAVE_PATHS = {
+  // フラット
+  F: "M4,34 L204,34",
+
+  // 小：間隔を不均一にする
+  S: "M4,34 C18,30 32,38 52,34 C70,32 88,36 110,34 C130,32 148,36 170,34 C186,33 196,35 204,34",
+
+  // 中：高さも間隔もバラつかせる
+  M: "M4,34 C18,16 36,52 60,34 C78,20 96,48 120,34 C138,18 158,50 182,34 C194,28 200,40 204,34",
+
+  // 大：振幅は強いが、周期を一定にしない
+  L: "M4,34 C20,4 40,64 68,34 C86,8 108,60 140,34 C158,10 178,62 198,34 C202,30 203,38 204,34"
+};
+
+
+  function svgWave(waveKey, color, size="full") {
+    const h = size === "mini" ? 44 : 64;
+    const stroke = 6;
+    const view = "0 0 208 68";
+    const scale = size === "mini" ? 0.75 : 1.0;
+
+    // Wave + little flower (for preview only optional)
+    return `
+      <svg width="${size==="mini"?110:220}" height="${size==="mini"?34:46}" viewBox="${view}" style="transform:scale(${scale});transform-origin:left center">
+        <path d="${WAVE_PATHS[waveKey]}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round" opacity="0.95"/>
+      </svg>
+    `;
+  }
+
+  // Single flower template (neutral / no meaning assigned)
+  function svgFlower(sizePx=44, withStem=false, opacity=0.92) {
+    // Simple 5-petal flower
+    const s = sizePx;
+    const cx = 32, cy = 32;
+    const svg = `
+    <svg width="${s}" height="${s}" viewBox="0 0 64 64">
+      ${withStem ? `<path d="M32 38 C30 44 30 50 32 56" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round" fill="none"/>` : ``}
+      <g opacity="${opacity}">
+        <path d="M32 10 C39 14 41 22 32 26 C23 22 25 14 32 10Z" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <path d="M54 32 C50 39 42 41 38 32 C42 23 50 25 54 32Z" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <path d="M32 54 C25 50 23 42 32 38 C41 42 39 50 32 54Z" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <path d="M10 32 C14 25 22 23 26 32 C22 41 14 39 10 32Z" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        <path d="M45 19 C45 27 39 31 32 26 C31 19 37 15 45 19Z" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.30)" stroke-width="1"/>
+        <circle cx="32" cy="32" r="7" fill="rgba(255,255,255,.22)" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+      </g>
+    </svg>`;
+    return svg;
+  }
+
+  function svgWaveWithSmallFlower(waveKey, color) {
+    // Wave plus a small flower on the right (coexist)
+    return `
+      <div style="position:relative; display:inline-block; width:240px; height:56px;">
+        <div style="position:absolute; left:0; top:6px;">${svgWave(waveKey, color, "full")}</div>
+        <div style="position:absolute; right:-2px; top:6px; transform:scale(.55); transform-origin: top right;">
+          ${svgFlower(64, false, 0.92)}
+        </div>
+      </div>
+    `;
+  }
+
+  // ===== UI state =====
+const palette = [
+  // 青系
+  "#8fb3ff","#6ea8fe","#4f83ff","#2f6bff","#1f4fd6",
+
+  // 紫系
+  "#c3a6ff","#b08cff","#9a6bff","#7f4cff","#5f34cc",
+
+  // 赤・ピンク系
+  "#ff9aa2","#ff7a8a","#ff5c6c","#ff3b4f","#d7263d",
+
+  // オレンジ・黄系
+  "#ffb38f","#ffa94d","#ff922b","#ffd166","#ffe066",
+
+  // 緑系
+  "#9ff0c0","#6ee7b7","#34d399","#10b981","#059669",
+
+  // 水色系
+  "#7ee6ff","#38bdf8","#0ea5e9","#0284c7","#0369a1",
+
+  // グレー系（静かな色）
+  "#f1f5f9","#e2e8f0","#cbd5e1","#94a3b8","#64748b","#334155","#1e293b"
+];
+
+  
+  let selectedWave = "S";
+  let selectedColor = "#8fb3ff";
+  let viewMonth = new Date(); // current month view
+
+  // ===== Elements =====
+  const dateInput = document.getElementById('dateInput');
+  const memoInput = document.getElementById('memoInput');
+  const swatchesEl = document.getElementById('swatches');
+  const colorPicker = document.getElementById('colorPicker');
+  const colorCode = document.getElementById('colorCode');
+  const waveSeg = document.getElementById('waveSeg');
+  const bigPreview = document.getElementById('bigPreview');
+
+  const monthLabel = document.getElementById('monthLabel');
+  const calGrid = document.getElementById('calGrid');
+
+  const modalBg = document.getElementById('modalBg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalIcon = document.getElementById('modalIcon');
+  const modalMemo = document.getElementById('modalMemo');
+const modalHistory = document.getElementById('modalHistory');
+  const deleteEntryBtn = document.getElementById('deleteEntryBtn');
+  const editEntryBtn = document.getElementById('editEntryBtn');
+
+  // Mini wave icons
+const miniF = document.getElementById('miniF');
+if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
+  document.getElementById('miniS').innerHTML = svgWave("S", "rgba(255,255,255,.70)", "mini");
+  document.getElementById('miniM').innerHTML = svgWave("M", "rgba(255,255,255,.70)", "mini");
+  document.getElementById('miniL').innerHTML = svgWave("L", "rgba(255,255,255,.70)", "mini");
+
+  // ===== Init =====
+  function setDateToToday() {
+    const t = new Date();
+    dateInput.value = toKey(t);
+  }
+  setDateToToday();
+
+  function renderSwatches() {
+    swatchesEl.innerHTML = '';
+    palette.forEach(hex => {
+      const b = document.createElement('button');
+      b.className = 'sw';
+      b.style.background = hex;
+      b.setAttribute('aria-pressed', String(hex.toLowerCase() === selectedColor.toLowerCase()));
+      b.title = hex;
+      b.addEventListener('click', () => {
+        selectedColor = hex;
+        colorPicker.value = hex;
+        colorCode.textContent = hex.toLowerCase();
+        renderSwatches();
+        renderPreview();
+      });
+      swatchesEl.appendChild(b);
+    });
+  }
+
+  function renderPreview() {
+    bigPreview.innerHTML = svgWaveWithSmallFlower(selectedWave, selectedColor);
+  }
+
+  function setWave(w) {
+    selectedWave = w;
+    [...waveSeg.querySelectorAll('.chip')].forEach(ch => {
+      ch.setAttribute('aria-pressed', String(ch.dataset.wave === w));
+    });
+    renderPreview();
+  }
+
+  renderSwatches();
+  renderPreview();
+
+  // wave selector click/keyboard
+  waveSeg.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    setWave(chip.dataset.wave);
+  });
+  waveSeg.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    e.preventDefault();
+    setWave(chip.dataset.wave);
+  });
+
+  colorPicker.addEventListener('input', () => {
+    selectedColor = colorPicker.value;
+    colorCode.textContent = selectedColor.toLowerCase();
+    renderSwatches();
+    renderPreview();
+  });
+
+  // ===== Save / Load =====
+  function currentDateKey() {
+    return dateInput.value;
+  }
+
+function saveCurrent() {
+  const key = currentDateKey();
+  if (!key) return;
+
+  const history = getDayHistory(key);
+  history.push({
+    ts: new Date().toISOString(),
+    wave: selectedWave,
+    color: selectedColor,
+    memo: memoInput.value || ""
+  });
+
+  upsertDayHistory(key, history);
+  renderCalendar();
+}
+
+function loadForDate(key) {
+  const history = getDayHistory(key);
+  if (history.length === 0) {
+    memoInput.value = "";
+    renderPreview();
+    return;
+  }
+
+  const entry = history[history.length - 1]; // 最新
+  setWave(entry.wave || "S");
+  selectedColor = entry.color || "#8fb3ff";
+  colorPicker.value = selectedColor;
+  colorCode.textContent = selectedColor.toLowerCase();
+  memoInput.value = entry.memo || "";
+  renderSwatches();
+  renderPreview();
+}
+
+  document.getElementById('saveBtn').addEventListener('click', saveCurrent);
+  document.getElementById('loadBtn').addEventListener('click', () => loadForDate(currentDateKey()));
+  document.getElementById('todayBtn').addEventListener('click', () => {
+    setDateToToday();
+    loadForDate(currentDateKey());
+  });
+
+  document.getElementById('clearTodayBtn').addEventListener('click', () => {
+    const key = currentDateKey();
+    if (!key) return;
+    deleteEntry(key);
+    memoInput.value = "";
+    renderCalendar();
+  });
+
+  // ===== Calendar rendering =====
+  function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function monthEnd(d) { return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+
+  function renderCalendar() {
+    const ms = monthStart(viewMonth);
+    const me = monthEnd(viewMonth);
+
+    const y = ms.getFullYear();
+    const m = ms.getMonth()+1;
+    monthLabel.textContent = `${y}年 ${m}月`;
+
+    // Build cells: from Sunday of week containing 1st to Saturday of week containing last day
+    const start = new Date(ms);
+    start.setDate(ms.getDate() - ms.getDay()); // go back to Sunday
+
+    const end = new Date(me);
+    end.setDate(me.getDate() + (6 - me.getDay())); // forward to Saturday
+
+    calGrid.innerHTML = '';
+
+    const all = readAll();
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+      const cell = document.createElement('div');
+      cell.className = 'day';
+      const inMonth = (d.getMonth() === ms.getMonth());
+      if (!inMonth) cell.classList.add('out');
+
+      const key = toKey(d);
+const raw = all[key];
+
+// 旧形式（1日1つ）にも対応しつつ、履歴配列に正規化
+const history = Array.isArray(raw) ? raw : (raw ? [{
+  ts: null,
+  wave: raw.wave || "S",
+  color: raw.color || "#8fb3ff",
+  memo: raw.memo || ""
+}] : []);
+
+const entry = history.length ? history[history.length - 1] : null;
+
+
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = String(d.getDate());
+      cell.appendChild(num);
+
+      const icon = document.createElement('div');
+      icon.className = 'icon';
+
+      if (entry) {
+        // Wave + small flower (coexist)
+        icon.innerHTML = `
+          <div style="position:relative;width:100%;height:54px;">
+            <div style="position:absolute; left:50%; bottom:2px; transform:translateX(-50%);">
+              ${svgWave(entry.wave, entry.color, "mini")}
+            </div>
+            <div style="position:absolute; right:6px; bottom:-6px; transform:scale(.36); transform-origin: bottom right;">
+              ${svgFlower(64, false, 0.92)}
+            </div>
+          </div>
+        `;
+        const badge = document.createElement('div');
+        badge.className = 'badge';
+        badge.textContent = '波';
+        cell.appendChild(badge);
+      } else {
+        // No entry: flower
+        icon.innerHTML = `
+          <div style="transform:scale(.70); transform-origin:center;">
+            ${svgFlower(64, true, 0.92)}
+          </div>
+        `;
+      }
+      cell.appendChild(icon);
+
+      cell.addEventListener('click', () => openDayModal(key));
+      calGrid.appendChild(cell);
+    }
+  }
+
+  // Month nav
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()-1, 1);
+    renderCalendar();
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()+1, 1);
+    renderCalendar();
+  });
+  document.getElementById('jumpTodayBtn').addEventListener('click', () => {
+    const t = new Date();
+    viewMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    renderCalendar();
+  });
+
+  // ===== Modal =====
+  let modalKey = null;
+
+function closeModal() {
+  modalBg.style.display = 'none';
+  modalBg.setAttribute('aria-hidden', 'true');
+  modalKey = null;
+}
+
+
+  function openDayModal(key) {
+  modalKey = key;
+  const history = getDayHistory(key);
+function upsertDayHistory(dateKey, historyArray) {
+  const all = readAll();
+  all[dateKey] = historyArray;
+  writeAll(all);
+}
+
+  modalTitle.textContent = key;
+
+  if (history.length) {
+    const latest = history[history.length - 1];
+    modalIcon.innerHTML = svgWaveWithSmallFlower(latest.wave, latest.color);
+    modalMemo.textContent = latest.memo ? latest.memo : "（メモなし）";
+    deleteEntryBtn.style.display = '';
+
+    // 履歴一覧（新しい順）
+    const items = [...history].reverse().map((h, idx) => {
+      const time = h.ts ? new Date(h.ts) : null;
+      const label = time ? `${pad2(time.getHours())}:${pad2(time.getMinutes())}` : "（以前の記録）";
+      const memoShort = (h.memo || "").trim().slice(0, 30);
+      const memoText = memoShort ? memoShort : "（メモなし）";
+
+      return `
+        <div data-hidx="${history.length - 1 - idx}"
+             style="border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
+                    border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div class="muted">${label}</div>
+            <div style="transform:scale(.55); transform-origin:right center;">
+              ${svgWave(h.wave, h.color, "mini")}
+            </div>
+          </div>
+          <div style="margin-top:6px; color:rgba(233,238,252,.92); font-size:13px;">${memoText}</div>
+        </div>
+      `;
+    }).join("");
+
+    modalHistory.innerHTML = items;
+
+    // クリックでその履歴を編集欄に読み込む（※保存すると新しい履歴として追加される）
+    modalHistory.querySelectorAll('[data-hidx]').forEach(el => {
+      el.addEventListener('click', () => {
+        const hidx = Number(el.getAttribute('data-hidx'));
+        const pick = history[hidx];
+        dateInput.value = key;
+
+        setWave(pick.wave || "S");
+        selectedColor = pick.color || "#8fb3ff";
+        colorPicker.value = selectedColor;
+        colorCode.textContent = selectedColor.toLowerCase();
+        memoInput.value = pick.memo || "";
+        renderSwatches();
+        renderPreview();
+
+        closeModal();
+      });
+    });
+
+  } else {
+    modalIcon.innerHTML = `<div style="transform:scale(.9); transform-origin:left top;">${svgFlower(64, true, 0.92)}</div>`;
+    modalMemo.textContent = "（この日は記録がありません）";
+    modalHistory.innerHTML = "";
+    deleteEntryBtn.style.display = 'none';
+  }
+
+  modalBg.style.display = 'flex';
+  modalBg.setAttribute('aria-hidden', 'false');
+}
+
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  modalBg.addEventListener('click', (e) => {
+    if (e.target === modalBg) closeModal();
+  });
+
+  deleteEntryBtn.addEventListener('click', () => {
+    if (!modalKey) return;
+    deleteEntry(modalKey);
+    if (modalKey === currentDateKey()) memoInput.value = "";
+    renderCalendar();
+    closeModal();
+  });
+
+  editEntryBtn.addEventListener('click', () => {
+    if (!modalKey) return;
+    dateInput.value = modalKey;
+    loadForDate(modalKey);
+    closeModal();
+    // If editing a day in another month, jump calendar to that month for coherence
+    const d = fromKey(modalKey);
+    viewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+    renderCalendar();
+  });
+
+  // Backup (simple)
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const data = localStorage.getItem(STORAGE_KEY) || "{}";
+    try {
+      await navigator.clipboard.writeText(data);
+      alert("バックアップ（テキスト）をクリップボードにコピーしました。\nメモ帳などに貼り付けて保存できます。");
+    } catch {
+      prompt("コピーできなかったので、ここから手動でコピーしてください。", data);
+    }
+  });
+
+  // Initial render
+  // set calendar to current month
+  const t = new Date();
+  viewMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+  renderCalendar();
+
+  // Load today's data if exists
+  loadForDate(currentDateKey());
+</script>
+</body>
+</html>
