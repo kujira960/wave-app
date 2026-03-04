@@ -337,8 +337,6 @@
   console.log("[auth] module loaded");
 
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-  window._supabase = supabase; // デバッグ用（あとで消してもOK）
-console.log("[auth] hash?", window.location.hash?.slice(0, 30));
 
   const SUPABASE_URL = "https://hnriucpfvvsttxeyydev.supabase.co"
   const SUPABASE_ANON_KEY = "sb_publishable_wa9mlPzEfUqhkdGaUvYN5w_PBTDBRq4";
@@ -351,18 +349,23 @@ console.log("[auth] hash?", window.location.hash?.slice(0, 30));
     },
   });
 
-  window.addEventListener("DOMContentLoaded", async () => {
-    console.log("[auth] DOM ready");
+  // デバッグ用（Consoleから状態確認できる）
+  window._supabase = supabase;
+
+  async function initAuth() {
+    console.log("[auth] initAuth start");
 
     const $status = document.getElementById("authStatus");
-    const $login = document.getElementById("btnLoginGoogle");
+    const $login  = document.getElementById("btnLoginGoogle");
     const $logout = document.getElementById("btnLogout");
+
+    console.log("[auth] elements", { hasStatus: !!$status, hasLogin: !!$login, hasLogout: !!$logout });
 
     function setStatus(text) {
       if ($status) $status.textContent = text;
     }
     function setButtons(isAuthed) {
-      if ($login) $login.style.display = isAuthed ? "none" : "inline-block";
+      if ($login)  $login.style.display  = isAuthed ? "none" : "inline-block";
       if ($logout) $logout.style.display = isAuthed ? "inline-block" : "none";
     }
 
@@ -391,6 +394,12 @@ console.log("[auth] hash?", window.location.hash?.slice(0, 30));
 
       setStatus(`ログイン中：${name}`);
       setButtons(true);
+
+      // URLに #access_token が残っていたら消す（安全）
+      if (window.location.hash && window.location.hash.includes("access_token")) {
+        window.history.replaceState(null, "", window.location.origin + "/");
+        console.log("[auth] cleaned hash");
+      }
     }
 
     async function signInWithGoogle() {
@@ -416,20 +425,23 @@ console.log("[auth] hash?", window.location.hash?.slice(0, 30));
       }
     }
 
-    if ($login) $login.addEventListener("click", signInWithGoogle);
+    if ($login)  $login.addEventListener("click", signInWithGoogle);
     if ($logout) $logout.addEventListener("click", signOut);
 
+    // Consoleから呼べるように
+    window.signInWithGoogle = signInWithGoogle;
+
     await renderAuthState();
-    if (window.location.hash && window.location.hash.includes("access_token")) {
-  window.history.replaceState(null, "", window.location.origin + "/");
-}
+    supabase.auth.onAuthStateChange(() => renderAuthState());
 
-    supabase.auth.onAuthStateChange(() => {
-      renderAuthState();
-    });
+    console.log("[auth] initAuth ready");
+  }
 
-    console.log("[auth] ready");
-  });
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", initAuth);
+  } else {
+    initAuth();
+  }
 </script>
 <script>
   // ===== Helpers (date) =====
