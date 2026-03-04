@@ -402,20 +402,18 @@
       }
     }
 
-    async function signInWithGoogle() {
-      console.log("[auth] login clicked");
+   async function signInWithGoogle() {
+  console.log("[auth] login clicked");
 
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+  });
 
-      if (error) {
-        console.error("[auth] signInWithOAuth error", error);
-        alert("Googleログイン開始に失敗しました");
-      }
-    }
+  if (error) {
+    console.error("[auth] signInWithOAuth error", error);
+    alert("Googleログイン開始に失敗しました");
+  }
+}
 
     async function signOut() {
       const { error } = await supabase.auth.signOut();
