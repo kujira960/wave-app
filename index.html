@@ -420,10 +420,8 @@ console.log("[auth] hash?", window.location.hash?.slice(0, 30));
     if ($logout) $logout.addEventListener("click", signOut);
 
     await renderAuthState();
-    // URLに #access_token が残っていたら、見えないように消す（セッションは保持される）
-if (window.location.hash && window.location.hash.includes("access_token")) {
-  window.history.replaceState(null, "", window.location.origin + window.location.pathname);
-  console.log("[auth] cleaned hash");
+    if (window.location.hash && window.location.hash.includes("access_token")) {
+  window.history.replaceState(null, "", window.location.origin + "/");
 }
 
     supabase.auth.onAuthStateChange(() => {
