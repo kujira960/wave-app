@@ -331,7 +331,99 @@
       </div>
     </div>
   </div>
+<script type="module">
+  console.log("[auth] module loaded");
 
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const SUPABASE_URL = "https://hnriucpfvvsttxeyydev.supabase.co"
+  const SUPABASE_ANON_KEY = "sb_publishable_wa9mlPzEfUqhkdGaUvYN5w_PBTDBRq4";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+
+  window.addEventListener("DOMContentLoaded", async () => {
+    console.log("[auth] DOM ready");
+
+    const $status = document.getElementById("authStatus");
+    const $login = document.getElementById("btnLoginGoogle");
+    const $logout = document.getElementById("btnLogout");
+
+    function setStatus(text) {
+      if ($status) $status.textContent = text;
+    }
+    function setButtons(isAuthed) {
+      if ($login) $login.style.display = isAuthed ? "none" : "inline-block";
+      if ($logout) $logout.style.display = isAuthed ? "inline-block" : "none";
+    }
+
+    async function renderAuthState() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("[auth] getSession error", error);
+        setStatus("Auth error");
+        setButtons(false);
+        return;
+      }
+
+      const session = data.session;
+      if (!session) {
+        setStatus("ログインなし / このPCの中に保存されます");
+        setButtons(false);
+        return;
+      }
+
+      const user = session.user;
+      const name =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email ||
+        "ログイン中";
+
+      setStatus(`ログイン中：${name}`);
+      setButtons(true);
+    }
+
+    async function signInWithGoogle() {
+      console.log("[auth] login clicked");
+
+      const redirectTo = window.location.origin + window.location.pathname;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+
+      if (error) {
+        console.error("[auth] signInWithOAuth error", error);
+        alert("Googleログイン開始に失敗しました");
+      }
+    }
+
+    async function signOut() {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("[auth] signOut error", error);
+        alert("ログアウトに失敗しました");
+      }
+    }
+
+    if ($login) $login.addEventListener("click", signInWithGoogle);
+    if ($logout) $logout.addEventListener("click", signOut);
+
+    await renderAuthState();
+
+    supabase.auth.onAuthStateChange(() => {
+      renderAuthState();
+    });
+
+    console.log("[auth] ready");
+  });
+</script>
 <script>
   // ===== Helpers (date) =====
   const pad2 = n => String(n).padStart(2, '0');
