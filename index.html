@@ -416,13 +416,16 @@
 }
 
     async function signOut() {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("[auth] signOut error", error);
-        alert("ログアウトに失敗しました");
-      }
-    }
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("[auth] signOut error", error);
+    alert("ログアウトに失敗しました");
+    return;
+  }
 
+  // 👇 これを追加（確実に画面を更新する）
+  await renderAuthState();
+}
     if ($login)  $login.addEventListener("click", signInWithGoogle);
     if ($logout) $logout.addEventListener("click", signOut);
 
