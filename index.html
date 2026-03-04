@@ -405,7 +405,7 @@
     async function signInWithGoogle() {
       console.log("[auth] login clicked");
 
-      const redirectTo = "https://shimmering-bubalanina-111bc2.netlify.app/";
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },
