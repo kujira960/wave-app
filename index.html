@@ -418,13 +418,18 @@
   }
 }
 
-    async function signOut() {
+  async function signOut() {
   const { error } = await supabase.auth.signOut();
+
   if (error) {
     console.error("[auth] signOut error", error);
     alert("ログアウトに失敗しました");
     return;
   }
+
+  // 追加
+  location.reload();
+}
 
   // 👇 これを追加（確実に画面を更新する）
   await renderAuthState();
