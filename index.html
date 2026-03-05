@@ -419,20 +419,29 @@ async function initAuth() {
     }
   }
 
-async function signOut() {
+async function signOut(e) {
+  if (e && typeof e.preventDefault === "function") e.preventDefault();
+
+  // クリックした瞬間に表示を変える
+  setStatus("ログアウト中…");
+  setButtons(false);
+
   const { error } = await supabase.auth.signOut();
 
   if (error) {
     console.error("[auth] signOut error", error);
     alert("ログアウトに失敗しました");
+    await renderAuthState();
     return;
   }
 
-  // UIを先に更新
-  await renderAuthState();
+  // ログアウト後の表示
+  setStatus("ログインなし / このPCの中に保存されます");
+  setButtons(false);
 
-  // 念のためリロード（確実）
-  location.reload();
+  // 念のため状態を再取得
+  await new Promise((r) => setTimeout(r, 80));
+  await renderAuthState();
 }
 
   if ($login)  $login.addEventListener("click", signInWithGoogle);
