@@ -352,105 +352,104 @@
   // デバッグ用（Consoleから状態確認できる）
   window._supabase = supabase;
 
-  async function initAuth() {
-    console.log("[auth] initAuth start");
+async function initAuth() {
+  console.log("[auth] initAuth start");
 
-    const $status = document.getElementById("authStatus");
-    const $login  = document.getElementById("btnLoginGoogle");
-    const $logout = document.getElementById("btnLogout");
+  const $status = document.getElementById("authStatus");
+  const $login  = document.getElementById("btnLoginGoogle");
+  const $logout = document.getElementById("btnLogout");
 
-    console.log("[auth] elements", { hasStatus: !!$status, hasLogin: !!$login, hasLogout: !!$logout });
+  console.log("[auth] elements", { hasStatus: !!$status, hasLogin: !!$login, hasLogout: !!$logout });
 
-    function setStatus(text) {
-      if ($status) $status.textContent = text;
-    }
-    function setButtons(isAuthed) {
-      if ($login)  $login.style.display  = isAuthed ? "none" : "inline-block";
-      if ($logout) $logout.style.display = isAuthed ? "inline-block" : "none";
-    }
-
-    async function renderAuthState() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("[auth] getSession error", error);
-        setStatus("Auth error");
-        setButtons(false);
-        return;
-      }
-
-      const session = data.session;
-      if (!session) {
-        setStatus("ログインなし / このPCの中に保存されます");
-        setButtons(false);
-        return;
-      }
-
-      const user = session.user;
-      const name =
-        user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        user.email ||
-        "ログイン中";
-
-      setStatus(`ログイン中：${name}`);
-      setButtons(true);
-
-      // URLに #access_token が残っていたら消す（安全）
-      if (window.location.hash && window.location.hash.includes("access_token")) {
-        window.history.replaceState(null, "", window.location.origin + "/");
-        console.log("[auth] cleaned hash");
-      }
-    }
-
-   async function signInWithGoogle() {
-  console.log("[auth] login clicked");
-
-  const { error } = await supabase.auth.signInWithOAuth({
-  provider: "google",
-  options: {
-    redirectTo: `${window.location.origin}/wave-app/`,
-  },
-});
-
-  if (error) {
-    console.error("[auth] signInWithOAuth error", error);
-    alert("Googleログイン開始に失敗しました");
+  function setStatus(text) {
+    if ($status) $status.textContent = text;
   }
-}
+  function setButtons(isAuthed) {
+    if ($login)  $login.style.display  = isAuthed ? "none" : "inline-block";
+    if ($logout) $logout.style.display = isAuthed ? "inline-block" : "none";
+  }
+
+  async function renderAuthState() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("[auth] getSession error", error);
+      setStatus("Auth error");
+      setButtons(false);
+      return;
+    }
+
+    const session = data.session;
+    if (!session) {
+      setStatus("ログインなし / このPCの中に保存されます");
+      setButtons(false);
+      return;
+    }
+
+    const user = session.user;
+    const name =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email ||
+      "ログイン中";
+
+    setStatus(`ログイン中：${name}`);
+    setButtons(true);
+
+    // URLに #access_token が残っていたら消す（GitHub Pagesは /wave-app/ に戻す）
+    if (window.location.hash && window.location.hash.includes("access_token")) {
+      window.history.replaceState(null, "", `${window.location.origin}/wave-app/`);
+      console.log("[auth] cleaned hash");
+    }
+  }
+
+  async function signInWithGoogle() {
+    console.log("[auth] login clicked");
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // ✅ GitHub Pagesのプロジェクトページに確実に戻す
+        redirectTo: `${window.location.origin}/wave-app/`,
+      },
+    });
+
+    if (error) {
+      console.error("[auth] signInWithOAuth error", error);
+      alert("Googleログイン開始に失敗しました");
+    }
+  }
 
   async function signOut() {
-  const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
 
-  if (error) {
-    console.error("[auth] signOut error", error);
-    alert("ログアウトに失敗しました");
-    return;
+    if (error) {
+      console.error("[auth] signOut error", error);
+      alert("ログアウトに失敗しました");
+      return;
+    }
+
+    // ✅ 1クリックで確実に画面反映
+    location.reload();
   }
 
-  // 追加
-  location.reload();
-}
+  if ($login)  $login.addEventListener("click", signInWithGoogle);
+  if ($logout) $logout.addEventListener("click", signOut);
 
-  // 👇 これを追加（確実に画面を更新する）
+  // Consoleから呼べるように（デバッグ用）
+  window.signInWithGoogle = signInWithGoogle;
+
   await renderAuthState();
+  supabase.auth.onAuthStateChange(() => renderAuthState());
+
+  console.log("[auth] initAuth ready");
 }
-    if ($login)  $login.addEventListener("click", signInWithGoogle);
-    if ($logout) $logout.addEventListener("click", signOut);
 
-    // Consoleから呼べるように
-    window.signInWithGoogle = signInWithGoogle;
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initAuth);
+} else {
+  initAuth();
+}
 
-    await renderAuthState();
-    supabase.auth.onAuthStateChange(() => renderAuthState());
-
-    console.log("[auth] initAuth ready");
-  }
-
-  if (document.readyState === "loading") {
-    window.addEventListener("DOMContentLoaded", initAuth);
-  } else {
-    initAuth();
-  }
 </script>
 <script>
   // ===== Helpers (date) =====
