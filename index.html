@@ -454,7 +454,10 @@ async function signOut(e) {
   window.signInWithGoogle = signInWithGoogle;
 
   await renderAuthState();
-  supabase.auth.onAuthStateChange(() => renderAuthState());
+ supabase.auth.onAuthStateChange((event, session) => {
+  console.log("[auth] state change:", event);
+  renderAuthState();
+});
 
   console.log("[auth] initAuth ready");
 }
