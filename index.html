@@ -406,8 +406,11 @@
   console.log("[auth] login clicked");
 
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-  });
+  provider: "google",
+  options: {
+    redirectTo: `${window.location.origin}/wave-app/`,
+  },
+});
 
   if (error) {
     console.error("[auth] signInWithOAuth error", error);
