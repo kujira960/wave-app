@@ -419,18 +419,21 @@ async function initAuth() {
     }
   }
 
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
+async function signOut() {
+  const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      console.error("[auth] signOut error", error);
-      alert("ログアウトに失敗しました");
-      return;
-    }
-
-    // ✅ 1クリックで確実に画面反映
-    location.reload();
+  if (error) {
+    console.error("[auth] signOut error", error);
+    alert("ログアウトに失敗しました");
+    return;
   }
+
+  // UIを先に更新
+  await renderAuthState();
+
+  // 念のためリロード（確実）
+  location.reload();
+}
 
   if ($login)  $login.addEventListener("click", signInWithGoogle);
   if ($logout) $logout.addEventListener("click", signOut);
