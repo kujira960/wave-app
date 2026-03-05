@@ -397,7 +397,7 @@ async function initAuth() {
 
     // URLに #access_token が残っていたら消す（GitHub Pagesは /wave-app/ に戻す）
     if (window.location.hash && window.location.hash.includes("access_token")) {
-      window.history.replaceState(null, "", `${window.location.origin}/wave-app/`);
+     window.history.replaceState(null, "", window.location.origin + window.location.pathname);
       console.log("[auth] cleaned hash");
     }
   }
@@ -422,37 +422,29 @@ async function initAuth() {
 async function signOut(e) {
   if (e && typeof e.preventDefault === "function") e.preventDefault();
 
-  // クリックした瞬間に表示を変える
-  setStatus("ログアウト中…");
-  setButtons(false);
+  try {
+    setStatus("ログアウト中…");
+    setButtons(false);
 
-  const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
 
-  if (error) {
-    console.error("[auth] signOut error", error);
+    // ✅ Supabaseが使うlocalStorageトークンを念のため削除（プロジェクトref不明でもまとめて消す）
+    for (const k of Object.keys(localStorage)) {
+      if (k.startsWith("sb-") && k.includes("auth-token")) {
+        localStorage.removeItem(k);
+      }
+    }
+
+    // ✅ GitHub Pagesのパスを保ったまま強制リロード（手動更新不要）
+    // window.location.pathname は /wave-app/ になっているはず
+    const next = `${window.location.origin}${window.location.pathname}?logout=${Date.now()}`;
+    window.location.replace(next);
+  } catch (err) {
+    console.error("[auth] signOut fatal", err);
     alert("ログアウトに失敗しました");
     await renderAuthState();
-    return;
   }
-
-  // ✅ セッションがnullになるまで少し待つ（最大2秒）
-  const timeoutMs = 2000;
-  const intervalMs = 120;
-  const start = Date.now();
-
-  while (Date.now() - start < timeoutMs) {
-    const { data, error: sErr } = await supabase.auth.getSession();
-    if (sErr) break;
-    if (!data?.session) break; // ログアウト確定
-    await new Promise((r) => setTimeout(r, intervalMs));
-  }
-
-  // ログアウト後の表示（確定）
-  setStatus("ログインなし / このPCの中に保存されます");
-  setButtons(false);
-
-  // 念のため最終反映
-  await renderAuthState();
 }
 
   if ($login)  $login.addEventListener("click", signInWithGoogle);
