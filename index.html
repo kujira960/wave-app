@@ -435,12 +435,23 @@ async function signOut(e) {
     return;
   }
 
-  // ログアウト後の表示
+  // ✅ セッションがnullになるまで少し待つ（最大2秒）
+  const timeoutMs = 2000;
+  const intervalMs = 120;
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const { data, error: sErr } = await supabase.auth.getSession();
+    if (sErr) break;
+    if (!data?.session) break; // ログアウト確定
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+
+  // ログアウト後の表示（確定）
   setStatus("ログインなし / このPCの中に保存されます");
   setButtons(false);
 
-  // 念のため状態を再取得
-  await new Promise((r) => setTimeout(r, 80));
+  // 念のため最終反映
   await renderAuthState();
 }
 
