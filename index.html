@@ -302,6 +302,34 @@
             </div>
           </div>
 
+          <label>天気</label>
+          <div class="seg" id="weatherSeg">
+            <div class="chip" data-weather="晴" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">晴</div>
+                <div class="s">晴れ</div>
+              </div>
+            </div>
+            <div class="chip" data-weather="曇" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">曇</div>
+                <div class="s">くもり</div>
+              </div>
+            </div>
+            <div class="chip" data-weather="雨" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">雨</div>
+                <div class="s">雨</div>
+              </div>
+            </div>
+            <div class="chip" data-weather="雪" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">雪</div>
+                <div class="s">雪</div>
+              </div>
+            </div>
+          </div>
+
           <label>色</label>
           <div class="swatches" id="swatches"></div>
 
@@ -699,6 +727,7 @@ const WAVE_PATHS = {
   let selectedWave = "S";
   let selectedColor = "#8fb3ff";
   let selectedEmotion = null;
+  let selectedWeather = null;
   let viewMonth = new Date(); // current month view
 
   // ===== Elements =====
@@ -709,6 +738,7 @@ const WAVE_PATHS = {
   const colorCode = document.getElementById('colorCode');
   const waveSeg = document.getElementById('waveSeg');
   const emotionSeg = document.getElementById('emotionSeg');
+  const weatherSeg = document.getElementById('weatherSeg');
   const bigPreview = document.getElementById('bigPreview');
 
   const monthLabel = document.getElementById('monthLabel');
@@ -775,6 +805,18 @@ if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
     });
   }
 
+  function setWeather(weather, toggle = false) {
+    if (toggle) {
+      // Toggle: もう一度押すと未選択に戻る
+      selectedWeather = selectedWeather === weather ? null : weather;
+    } else {
+      selectedWeather = weather;
+    }
+    [...weatherSeg.querySelectorAll('.chip')].forEach(ch => {
+      ch.setAttribute('aria-pressed', String(ch.dataset.weather === selectedWeather));
+    });
+  }
+
   renderSwatches();
   renderPreview();
 
@@ -806,6 +848,20 @@ if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
     setEmotion(chip.dataset.emotion);
   });
 
+  // weather selector click/keyboard
+  weatherSeg.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    setWeather(chip.dataset.weather, true);
+  });
+  weatherSeg.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    e.preventDefault();
+    setWeather(chip.dataset.weather, true);
+  });
+
   colorPicker.addEventListener('input', () => {
     selectedColor = colorPicker.value;
     colorCode.textContent = selectedColor.toLowerCase();
@@ -827,6 +883,7 @@ function saveCurrent() {
     ts: new Date().toISOString(),
     wave: selectedWave,
     emotion: selectedEmotion || "",
+    weather: selectedWeather || "",
     color: selectedColor,
     memo: memoInput.value || ""
   });
@@ -851,6 +908,8 @@ function loadForDate(key) {
     memoInput.value = "";
     selectedEmotion = null;
     setEmotion(null);
+    selectedWeather = null;
+    setWeather(null);
     renderPreview();
     return;
   }
@@ -859,6 +918,8 @@ function loadForDate(key) {
   setWave(entry.wave || "S");
   selectedEmotion = entry.emotion || null;
   setEmotion(selectedEmotion);
+  selectedWeather = entry.weather || null;
+  setWeather(selectedWeather);
   selectedColor = entry.color || "#8fb3ff";
   colorPicker.value = selectedColor;
   colorCode.textContent = selectedColor.toLowerCase();
@@ -1175,7 +1236,6 @@ function closeModal() {
   // set calendar to current month
   const t = new Date();
   viewMonth = new Date(t.getFullYear(), t.getMonth(), 1);
-  renderCalendar();
 
   // Load today's data if exists
   renderCalendar();
