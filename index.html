@@ -265,6 +265,35 @@
             </div>
           </div>
 
+          
+          <label>感情</label>
+          <div class="seg" id="emotionSeg">
+            <div class="chip" data-emotion="喜" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">喜</div>
+                <div class="s">嬉しい</div>
+              </div>
+            </div>
+            <div class="chip" data-emotion="怒" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">怒</div>
+                <div class="s">ムカつく</div>
+              </div>
+            </div>
+            <div class="chip" data-emotion="哀" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">哀</div>
+                <div class="s">悲しい</div>
+              </div>
+            </div>
+            <div class="chip" data-emotion="楽" role="button" tabindex="0" aria-pressed="false">
+              <div>
+                <div class="t">楽</div>
+                <div class="s">楽しい</div>
+              </div>
+            </div>
+          </div>
+
           <label>色</label>
           <div class="swatches" id="swatches"></div>
 
@@ -649,6 +678,7 @@ const palette = [
   
   let selectedWave = "S";
   let selectedColor = "#8fb3ff";
+  let selectedEmotion = null;
   let viewMonth = new Date(); // current month view
 
   // ===== Elements =====
@@ -658,6 +688,7 @@ const palette = [
   const colorPicker = document.getElementById('colorPicker');
   const colorCode = document.getElementById('colorCode');
   const waveSeg = document.getElementById('waveSeg');
+  const emotionSeg = document.getElementById('emotionSeg');
   const bigPreview = document.getElementById('bigPreview');
 
   const monthLabel = document.getElementById('monthLabel');
@@ -716,6 +747,14 @@ if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
     renderPreview();
   }
 
+  function setEmotion(emotion) {
+    // Toggle: もう一度押すと未選択に戻る
+    selectedEmotion = selectedEmotion === emotion ? null : emotion;
+    [...emotionSeg.querySelectorAll('.chip')].forEach(ch => {
+      ch.setAttribute('aria-pressed', String(ch.dataset.emotion === selectedEmotion));
+    });
+  }
+
   renderSwatches();
   renderPreview();
 
@@ -731,6 +770,20 @@ if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
     if (!chip) return;
     e.preventDefault();
     setWave(chip.dataset.wave);
+  });
+
+  // emotion selector click/keyboard
+  emotionSeg.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    setEmotion(chip.dataset.emotion);
+  });
+  emotionSeg.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    e.preventDefault();
+    setEmotion(chip.dataset.emotion);
   });
 
   colorPicker.addEventListener('input', () => {
@@ -753,6 +806,7 @@ function saveCurrent() {
   history.push({
     ts: new Date().toISOString(),
     wave: selectedWave,
+    emotion: selectedEmotion || "",
     color: selectedColor,
     memo: memoInput.value || ""
   });
@@ -774,12 +828,16 @@ function loadForDate(key) {
   const history = getDayHistory(key);
   if (history.length === 0) {
     memoInput.value = "";
+    selectedEmotion = null;
+    setEmotion(null);
     renderPreview();
     return;
   }
 
   const entry = history[history.length - 1]; // 最新
   setWave(entry.wave || "S");
+  selectedEmotion = entry.emotion || null;
+  setEmotion(selectedEmotion);
   selectedColor = entry.color || "#8fb3ff";
   colorPicker.value = selectedColor;
   colorCode.textContent = selectedColor.toLowerCase();
