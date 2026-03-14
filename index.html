@@ -534,7 +534,20 @@ function upsertDayHistory(dateKey, historyArray) {
   all[dateKey] = historyArray;
   writeAll(all);
 }
+function deleteHistoryItem(dateKey, index) {
+  const history = getDayHistory(dateKey);
+  if (!history[index]) return false;
 
+  history.splice(index, 1);
+
+  if (history.length === 0) {
+    deleteEntry(dateKey);
+  } else {
+    upsertDayHistory(dateKey, history);
+  }
+
+  return true;
+}
   // ===== SVG templates =====
   // Wave paths: fixed templates (S/M/L). Color will be applied.
 const WAVE_PATHS = {
@@ -880,10 +893,7 @@ function closeModal() {
   function openDayModal(key) {
   modalKey = key;
   const history = getDayHistory(key);
-function upsertDayHistory(dateKey, historyArray) {
-  const all = readAll();
-  all[dateKey] = historyArray;
-  writeAll(all);
+
 }
 
   modalTitle.textContent = key;
@@ -902,18 +912,57 @@ function upsertDayHistory(dateKey, historyArray) {
       const memoText = memoShort ? memoShort : "（メモなし）";
 
       return `
-        <div data-hidx="${history.length - 1 - idx}"
-             style="border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
-                    border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-            <div class="muted">${label}</div>
-            <div style="transform:scale(.55); transform-origin:right center;">
-              ${svgWave(h.wave, h.color, "mini")}
-            </div>
-          </div>
-          <div style="margin-top:6px; color:rgba(233,238,252,.92); font-size:13px;">${memoText}</div>
+  <div data-hidx="${history.length - 1 - idx}"
+       style="border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
+              border-radius:14px; padding:10px 12px; margin-bottom:8px; cursor:pointer;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <div class="muted">${label}</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="transform:scale(.55); transform-origin:right center;">
+          ${svgWave(h.wave, h.color, "mini")}
         </div>
-      `;
+        <button
+          type="button"
+          class="btn small danger hist-delete-btn"
+          data-delete-hidx="${history.length - 1 - idx}"
+        >
+          削除
+        </button>
+      </div>
+    </div>
+    <div style="margin-top:6px; color:rgba(233,238,252,.92); font-size:13px;">${memoText}</div>
+  </div>
+`;
+modalHistory.querySelectorAll('.hist-delete-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    const hidx = Number(btn.getAttribute('data-delete-hidx'));
+    const ok = confirm("この記録を削除しますか？");
+    if (!ok) return;
+
+    const deleted = deleteHistoryItem(key, hidx);
+    if (!deleted) return;
+
+    if (key === currentDateKey()) {
+      const latest = getDayHistory(key);
+      if (latest.length) {
+        loadForDate(key);
+      } else {
+        memoInput.value = "";
+        setWave("S");
+        selectedColor = "#8fb3ff";
+        colorPicker.value = selectedColor;
+        colorCode.textContent = selectedColor.toLowerCase();
+        renderSwatches();
+        renderPreview();
+      }
+    }
+
+    renderCalendar();
+    openDayModal(key);
+  });
+});
     }).join("");
 
     modalHistory.innerHTML = items;
@@ -946,7 +995,7 @@ function upsertDayHistory(dateKey, historyArray) {
 
   modalBg.style.display = 'flex';
   modalBg.setAttribute('aria-hidden', 'false');
-}
+
 
   document.getElementById('closeModalBtn').addEventListener('click', closeModal);
   modalBg.addEventListener('click', (e) => {
