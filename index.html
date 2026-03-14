@@ -315,6 +315,11 @@
           <div id="saveMessage"></div>
         </div>
 
+          <div id="todayWaveSummary" style="margin-top:12px; padding:10px 12px; border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.04); font-size:13px; color:rgba(233,238,252,.92);">
+            <div style="font-weight:700; margin-bottom:6px;">今日の波</div>
+            <div id="todayWaveContent">読み込み中…</div>
+          </div>
+
      
 
         <div class="preview">
@@ -804,6 +809,7 @@ function saveCurrent() {
 
   upsertDayHistory(key, history);
   renderCalendar();
+  updateTodayWave();
 
   // 保存成功メッセージを表示
   const msgEl = document.getElementById('saveMessage');
@@ -837,6 +843,32 @@ function loadForDate(key) {
   renderPreview();
 }
 
+function updateTodayWave() {
+  const key = toKey(new Date());
+  const history = getDayHistory(key);
+  const container = document.getElementById('todayWaveContent');
+  if (!container) return;
+
+  if (history.length === 0) {
+    container.textContent = 'まだ記録がありません';
+    return;
+  }
+
+  const last = history[history.length - 1];
+  const emotionHtml = last.emotion
+    ? `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:${last.color};border:1px solid ${last.color};background:rgba(255,255,255,.04);">${last.emotion}</span>`
+    : '';
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="transform:scale(.55); transform-origin:right center;">
+        ${svgWave(last.wave, last.color, "mini")}
+      </div>
+      ${emotionHtml}
+    </div>
+  `;
+}
+
   document.getElementById('saveBtn').addEventListener('click', saveCurrent);
   document.getElementById('loadBtn').addEventListener('click', () => loadForDate(currentDateKey()));
   document.getElementById('todayBtn').addEventListener('click', () => {
@@ -850,6 +882,7 @@ function loadForDate(key) {
     deleteEntry(key);
     memoInput.value = "";
     renderCalendar();
+    updateTodayWave();
   });
 
   // ===== Calendar rendering =====
@@ -1121,6 +1154,7 @@ function closeModal() {
 
   // Load today's data if exists
   loadForDate(currentDateKey());
+  updateTodayWave();
 </script>
 </body>
 </html>
