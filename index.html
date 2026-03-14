@@ -1100,6 +1100,10 @@ function closeModal() {
     ? `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:${h.color};border:1px solid ${h.color};background:rgba(255,255,255,.04);">${h.emotion}</span>`
     : '';
 
+  const weatherHtml = h.weather
+    ? `<span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:rgba(233,238,252,.82);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);">${h.weather}</span>`
+    : '';
+
   return `
     <div data-hidx="${history.length - 1 - idx}"
          style="border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);
@@ -1108,6 +1112,7 @@ function closeModal() {
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
           <span style="font-size:14px; font-weight:600; color:rgba(233,238,252,.85);">${label}</span>
           ${emotionHtml}
+          ${weatherHtml}
         </div>
 
         <div style="display:flex; align-items:center; gap:8px;">
