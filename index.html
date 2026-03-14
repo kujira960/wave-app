@@ -225,7 +225,7 @@
       <section class="card" aria-label="今日の波を作る">
         <div class="hd">
           <h2>今日の波</h2>
-          <button class="btn small danger" id="clearTodayBtn" title="今日の記録だけ消す">今日を消す</button>
+          <button class="btn small" id="helpBtn">？</button>
         </div>
 
         <div class="bd">
@@ -375,6 +375,27 @@
       <div class="ft">
         <button class="btn danger" id="deleteEntryBtn">この日の記録を消す</button>
         <button class="btn primary" id="editEntryBtn">この日に編集する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-bg" id="helpModalBg" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="説明">
+      <div class="hd">
+        <div class="ttl">Wave & Flower について</div>
+        <button class="btn small" id="closeHelpModalBtn">閉じる</button>
+      </div>
+      <div class="bd">
+        <p>これはあなたの精神の波を記録して、表示するアプリです。</p>
+        <p>一日に何度でも記録でき、間違えて保存した記録は削除できます。</p>
+        <p>その時の感情に合わせて、<br/>
+        波の形・喜怒哀楽・色を自由に選んでください。</p>
+        <ul>
+          <li>波　　　：気分の強さ</li>
+          <li>喜怒哀楽：感情の種類</li>
+          <li>色　　　：気分のニュアンス</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -1133,6 +1154,27 @@ function closeModal() {
     const d = fromKey(modalKey);
     viewMonth = new Date(d.getFullYear(), d.getMonth(), 1);
     renderCalendar();
+  });
+
+  // Help modal
+  const helpModalBg = document.getElementById('helpModalBg');
+  const closeHelpModalBtn = document.getElementById('closeHelpModalBtn');
+
+  document.getElementById('helpBtn').addEventListener('click', () => {
+    helpModalBg.style.display = 'flex';
+    helpModalBg.setAttribute('aria-hidden', 'false');
+  });
+
+  closeHelpModalBtn.addEventListener('click', () => {
+    helpModalBg.style.display = 'none';
+    helpModalBg.setAttribute('aria-hidden', 'true');
+  });
+
+  helpModalBg.addEventListener('click', (e) => {
+    if (e.target === helpModalBg) {
+      helpModalBg.style.display = 'none';
+      helpModalBg.setAttribute('aria-hidden', 'true');
+    }
   });
 
   // Backup (simple)
