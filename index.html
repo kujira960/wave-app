@@ -652,28 +652,19 @@ const WAVE_PATHS = {
   }
 
   // ===== UI state =====
-const palette = [
-  // 青系
-  "#8fb3ff","#6ea8fe","#4f83ff","#2f6bff","#1f4fd6",
-
-  // 紫系
-  "#c3a6ff","#b08cff","#9a6bff","#7f4cff","#5f34cc",
-
-  // 赤・ピンク系
-  "#ff9aa2","#ff7a8a","#ff5c6c","#ff3b4f","#d7263d",
-
-  // オレンジ・黄系
-  "#ffb38f","#ffa94d","#ff922b","#ffd166","#ffe066",
-
-  // 緑系
-  "#9ff0c0","#6ee7b7","#34d399","#10b981","#059669",
-
-  // 水色系
-  "#7ee6ff","#38bdf8","#0ea5e9","#0284c7","#0369a1",
-
-  // グレー系（静かな色）
-  "#f1f5f9","#e2e8f0","#cbd5e1","#94a3b8","#64748b","#334155","#1e293b"
-];
+// カラーパレット（代表色5種 x 薄い/濃い）
+  const COLORS = [
+    // 青
+    "#60a5fa", "#2563eb",
+    // 緑
+    "#4ade80", "#16a34a",
+    // 黄
+    "#facc15", "#eab308",
+    // 赤
+    "#f87171", "#dc2626",
+    // 紫
+    "#a78bfa", "#7c3aed",
+  ];
 
   
   let selectedWave = "S";
@@ -718,7 +709,7 @@ if (miniF) miniF.innerHTML = svgWave("F", "rgba(255,255,255,.70)", "mini");
 
   function renderSwatches() {
     swatchesEl.innerHTML = '';
-    palette.forEach(hex => {
+    COLORS.forEach(hex => {
       const b = document.createElement('button');
       b.className = 'sw';
       b.style.background = hex;
